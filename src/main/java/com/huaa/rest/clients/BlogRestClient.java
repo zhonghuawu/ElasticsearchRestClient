@@ -1,9 +1,13 @@
 package com.huaa.rest.clients;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.huaa.rest.core.ESRestClient;
+import com.huaa.rest.data.Blog;
+import com.huaa.rest.data.TemplateUtil;
+import com.huaa.util.GsonUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.common.inject.internal.Join;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -50,7 +54,7 @@ public class BlogRestClient {
 
     private static String joinIndexName(String suffix)
     {
-        return Join.join("-", alias, suffix);
+        return Joiner.on("-").join(alias, suffix);
     }
 
     public boolean store(String suffix, Blog blog) throws IOException {

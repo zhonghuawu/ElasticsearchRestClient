@@ -26,7 +26,7 @@ public class GenerateTemplateUtil {
                         .field("number_of_shards", "3")
                         .field("number_of_replicas", "1")
                         .field("refresh_interval", "3s")
-                        .field("max_result_window ", "50000")
+                        .field("max_result_window ", "10000")
                     .endObject()
                 .endObject()
                 .startObject("aliases")
@@ -40,17 +40,16 @@ public class GenerateTemplateUtil {
         return builder;
     }
 
-    public static String loggingTemplate(String alias) {
+    public static XContentBuilder loggingTemplate(String alias) {
         try {
             return builder(alias)
                     .startObject("id").field("type", "keyword").endObject()
-                    .startObject("timestamp").field("type", "date").field("format", DateUtil.DATE_FORMAT).endObject()
+                    .startObject("timestamp").field("type", "date").endObject()
                     .startObject("content").field("type", "text").field("index", "no").endObject()
                     .endObject()
                     .endObject()
                     .endObject()
-                    .endObject()
-                    .string();
+                    .endObject();
         } catch (IOException e) {
             throw new RuntimeException("build logging template failed", e);
         }

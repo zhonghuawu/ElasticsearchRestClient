@@ -1,6 +1,7 @@
 package com.huaa.rest.core;
 
 import com.google.common.collect.Lists;
+import com.huaa.util.GsonUtil;
 import org.apache.http.HttpHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +11,10 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -33,6 +37,8 @@ public class ESRestClient {
     private Logger logger = LogManager.getLogger(ESRestClient.class);
 
     private RestHighLevelClient client;
+
+    private static String DEFAULT_TYPE = "_doc";
 
     public ESRestClient(String... ips)
     {
@@ -67,7 +73,7 @@ public class ESRestClient {
     }
 
     public boolean index(String indexName, Object object) throws IOException {
-        IndexRequest request = new IndexRequest(indexName)
+        IndexRequest request = new IndexRequest(indexName, DEFAULT_TYPE)
                 .source(GsonUtil.toJson(object), XContentType.JSON);
         IndexResponse response = client.index(request, RequestOptions.DEFAULT);
         return response.status() == RestStatus.CREATED;
@@ -79,6 +85,7 @@ public class ESRestClient {
                 .size(pageSize)
                 .from((page-1)* pageSize);
         SearchRequest request = new SearchRequest(indexName)
+                .types(DEFAULT_TYPE)
                 .source(builder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         SearchHits hits = response.getHits();
