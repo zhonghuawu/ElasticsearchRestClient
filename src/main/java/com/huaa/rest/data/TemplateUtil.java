@@ -3,10 +3,8 @@ package com.huaa.rest.data;
 import com.google.common.base.Joiner;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentGenerator;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Desc:
@@ -92,11 +90,7 @@ public class TemplateUtil {
 
     public static void main(String[] args) throws IOException {
         XContentBuilder builder = blogTemplate("blog").prettyPrint();
-        XContentGenerator generator = builder.generator();
-        OutputStream os = builder.getOutputStream();
-        byte[] bytes = new byte[10000];
-        generator.writeUTF8String(bytes, 0, bytes.length);
-        System.out.println(new String(bytes));
+        builder.close();
     }
 
 }

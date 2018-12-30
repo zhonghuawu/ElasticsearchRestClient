@@ -1,11 +1,12 @@
 package com.huaa.rest.core;
 
-import com.google.common.collect.Lists;
 import com.huaa.util.GsonUtil;
 import org.apache.http.HttpHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -19,12 +20,9 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Desc:
@@ -52,7 +50,7 @@ public class ESRestClient {
         }
         RestClientBuilder builder = RestClient.builder(hosts);
         client = new RestHighLevelClient(builder);
-        logger.info("build com.huaa.rest-high-level client succeed");
+        logger.info("build rest-high-level client succeed");
     }
 
     public RestHighLevelClient getClient()
@@ -79,7 +77,13 @@ public class ESRestClient {
         return response.status() == RestStatus.CREATED;
     }
 
-    public List<String> search(String indexName, QueryBuilder queryBuilder, int pageSize, int page) throws IOException {
+    public boolean delete(String indexName, String id) throws IOException {
+        DeleteRequest request = new DeleteRequest(indexName, DEFAULT_TYPE, id);
+        DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
+        return response.status() == RestStatus.OK;
+    }
+
+    public SearchResponse search(String indexName, QueryBuilder queryBuilder, int pageSize, int page) throws IOException {
         SearchSourceBuilder builder = new SearchSourceBuilder()
                 .query(queryBuilder)
                 .size(pageSize)
@@ -87,14 +91,8 @@ public class ESRestClient {
         SearchRequest request = new SearchRequest(indexName)
                 .types(DEFAULT_TYPE)
                 .source(builder);
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-        SearchHits hits = response.getHits();
-        List<String> results = Lists.newArrayList();
-        for (SearchHit hit : hits)
-        {
-            results.add(hit.getSourceAsString());
-        }
-        return results;
+        return client.search(request, RequestOptions.DEFAULT);
     }
+
 
 }

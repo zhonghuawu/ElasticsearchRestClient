@@ -6,6 +6,7 @@ import com.huaa.rest.data.Blog;
 import com.huaa.util.DateUtil;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Desc:
@@ -16,7 +17,7 @@ import java.io.IOException;
 
 public class RestHighLevelClientTest {
 
-    private static String esips = "192.168.1.6:9200";
+    private static String esips = "192.168.1.4:9200";
 
     private static ESRestClient esRestClient;
     private static BlogRestClient blogRestClient;
@@ -26,8 +27,9 @@ public class RestHighLevelClientTest {
     }
 
     public static void main(String[] args) throws IOException {
-        System.out.println(blogRestClient.toString());
-        store();
+//        store();
+        query();
+
         esRestClient.close();
     }
 
@@ -36,6 +38,12 @@ public class RestHighLevelClientTest {
         System.out.println(blog);
         boolean created = blogRestClient.store(DateUtil.formatIndex(blog.getTimestamp()), blog);
         System.out.println("created: " + created);
+        esRestClient.close();
+    }
+
+    private static void query() throws IOException {
+        List<Blog> blogList = blogRestClient.query("title", "title0", 10, 1);
+        blogList.forEach(System.out::println);
     }
 
 }

@@ -8,13 +8,14 @@ import com.huaa.rest.data.TemplateUtil;
 import com.huaa.util.GsonUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHits;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.StringJoiner;
 
 /**
  * Desc:
@@ -29,6 +30,7 @@ public class BlogRestClient {
     private ESRestClient client;
 
     private static String alias = "blog";
+    private static String templateName = alias + "-template";
 
     public BlogRestClient(ESRestClient client) {
         this.client = client;
@@ -44,10 +46,6 @@ public class BlogRestClient {
     }
 
     private boolean putTemplate() throws IOException {
-        String templateName = new StringJoiner("-")
-                .add(alias)
-                .add("template")
-                .toString();
         XContentBuilder templateSource = TemplateUtil.blogTemplate(alias);
         return client.putTemplate(templateName, templateSource);
     }
@@ -61,12 +59,12 @@ public class BlogRestClient {
         return client.index(joinIndexName(suffix), blog);
     }
 
-
     public List<Blog> query(String field, Object value, int pageSize, int page) throws IOException {
         QueryBuilder queryBuilder = QueryBuilders.termQuery(field, value);
-        List<String> responses = client.search(alias, queryBuilder, pageSize, page);
+        SearchResponse response = client.search(alias, queryBuilder, pageSize, page);
+        SearchHits hits = response.getHits();
         List<Blog> results = Lists.newArrayList();
-        responses.forEach(response -> results.add(GsonUtil.fromJson(response, Blog.class)));
+        hits.forEach(hit -> results.add(GsonUtil.fromJson(hit.getSourceAsString(), Blog.class)));
         return results;
     }
 
