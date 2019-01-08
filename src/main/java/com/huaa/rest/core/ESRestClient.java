@@ -72,13 +72,6 @@ public class ESRestClient {
         return response.isAcknowledged();
     }
 
-    public boolean index(String indexName, Object object) throws IOException {
-        IndexRequest request = new IndexRequest(indexName, DEFAULT_TYPE)
-                .source(GsonUtil.toJson(object), XContentType.JSON);
-        IndexResponse response = client.index(request, RequestOptions.DEFAULT);
-        return response.status() == RestStatus.CREATED;
-    }
-
     public boolean index(String indexName, Object... objects) throws IOException {
         BulkRequest bulkRequest = new BulkRequest();
         for (Object object : objects) {
