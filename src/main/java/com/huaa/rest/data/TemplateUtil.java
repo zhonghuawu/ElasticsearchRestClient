@@ -1,6 +1,5 @@
 package com.huaa.rest.data;
 
-import com.google.common.base.Joiner;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
@@ -22,7 +21,7 @@ public class TemplateUtil {
         builder.startObject();
         {
             builder.field("order", 1000);
-            builder.field("index_patterns", Joiner.on("-").join(alias, "*"));
+            builder.field("index_patterns", alias+"*");
             builder.startObject("settings");
             {
                 builder.startObject("index");
@@ -58,10 +57,24 @@ public class TemplateUtil {
                         builder.endObject();
                         builder.startObject("tags");
                         {
-                            builder.field("type", "keyword");
+                            builder.field("type", "nested");
+                            builder.startObject("properties");
+                            {
+                                builder.startObject("key");
+                                {
+                                    builder.field("type", "keyword");
+                                }
+                                builder.endObject();
+                                builder.startObject("value");
+                                {
+                                    builder.field("type", "keyword");
+                                }
+                                builder.endObject();
+                            }
+                            builder.endObject();
                         }
                         builder.endObject();
-                        builder.startObject("timestamp");
+                        builder.startObject("ts");
                         {
                             builder.field("type", "date");
                         }

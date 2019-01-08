@@ -5,6 +5,8 @@ import org.apache.http.HttpHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -75,6 +77,15 @@ public class ESRestClient {
                 .source(GsonUtil.toJson(object), XContentType.JSON);
         IndexResponse response = client.index(request, RequestOptions.DEFAULT);
         return response.status() == RestStatus.CREATED;
+    }
+
+    public boolean index(String indexName, Object... objects) throws IOException {
+        BulkRequest bulkRequest = new BulkRequest();
+        for (Object object : objects) {
+            bulkRequest.add(new IndexRequest(indexName, DEFAULT_TYPE).source(GsonUtil.toJson(object), XContentType.JSON));
+        }
+        BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        return ! bulkResponse.hasFailures();
     }
 
     public boolean delete(String indexName, String id) throws IOException {

@@ -3,7 +3,7 @@ package com.huaa.rest.clients;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.huaa.rest.core.ESRestClient;
-import com.huaa.rest.data.Blog;
+import com.huaa.rest.data.RawBlog;
 import com.huaa.rest.data.TemplateUtil;
 import com.huaa.util.GsonUtil;
 import org.apache.logging.log4j.LogManager;
@@ -55,16 +55,16 @@ public class BlogRestClient {
         return Joiner.on("-").join(alias, suffix);
     }
 
-    public boolean store(String suffix, Blog blog) throws IOException {
-        return client.index(joinIndexName(suffix), blog);
+    public boolean store(String suffix, RawBlog... rawBlogs) throws IOException {
+        return client.index(joinIndexName(suffix), rawBlogs);
     }
 
-    public List<Blog> query(String field, Object value, int pageSize, int page) throws IOException {
+    public List<RawBlog> query(String field, Object value, int pageSize, int page) throws IOException {
         QueryBuilder queryBuilder = QueryBuilders.termQuery(field, value);
         SearchResponse response = client.search(alias, queryBuilder, pageSize, page);
         SearchHits hits = response.getHits();
-        List<Blog> results = Lists.newArrayList();
-        hits.forEach(hit -> results.add(GsonUtil.fromJson(hit.getSourceAsString(), Blog.class)));
+        List<RawBlog> results = Lists.newArrayList();
+        hits.forEach(hit -> results.add(GsonUtil.fromJson(hit.getSourceAsString(), RawBlog.class)));
         return results;
     }
 
