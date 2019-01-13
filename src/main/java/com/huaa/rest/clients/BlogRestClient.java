@@ -46,6 +46,9 @@ public class BlogRestClient {
     }
 
     private boolean putTemplate() throws IOException {
+        if (client.isExistedTemplate(templateName)) {
+            return true;
+        }
         XContentBuilder templateSource = TemplateUtil.blogTemplate(alias);
         return client.putTemplate(templateName, templateSource);
     }

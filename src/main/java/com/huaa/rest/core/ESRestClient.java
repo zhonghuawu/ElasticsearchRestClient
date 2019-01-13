@@ -4,6 +4,8 @@ import com.huaa.util.GsonUtil;
 import org.apache.http.HttpHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
+import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesResponse;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -62,6 +64,12 @@ public class ESRestClient {
 
     public void close() throws IOException {
         client.close();
+    }
+
+    public boolean isExistedTemplate(String templateName) throws IOException {
+        GetIndexTemplatesRequest request = new GetIndexTemplatesRequest(templateName);
+        GetIndexTemplatesResponse response = client.indices().getTemplate(request, RequestOptions.DEFAULT);
+        return ! response.getIndexTemplates().isEmpty();
     }
 
     public boolean putTemplate(String templateName, XContentBuilder templateBuilder) throws IOException {
