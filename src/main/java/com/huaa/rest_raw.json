@@ -1,0 +1,38 @@
+
+// POST blog-test/_doc/test_id/_update
+{
+  "script": {
+    "lang": "painless",
+    "source": """
+    // ctx._source.tags.addAll(params.tags)
+    for (int i=0; i<params.tags.length; i++) {
+      int j=0;
+      for (; j<ctx._source.tags.length; j++) {
+        if (params.tags[i]['key'] == ctx._source.tags[j]['key']) {
+        ctx._source.tags[j]['value']=params.tags[i]['value'];
+        break;
+        }
+      }
+      if (j===ctx._source.tags.length) {
+        ctx._source.tags.add(params.tags[i]);
+        }
+    }
+    """,
+    "params": {
+      "tags": [
+        {
+          "key":"key1",
+          "value": "value1_1"
+        },
+        {
+          "key":"key2",
+          "value": "value2"
+        },
+        {
+          "key":"key3",
+          "value": "value3"
+        }
+      ]
+      }
+    }
+}
