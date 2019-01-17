@@ -2,6 +2,7 @@ package com.huaa.rest.core;
 
 import com.huaa.util.GsonUtil;
 import org.apache.http.HttpHost;
+import org.apache.http.StatusLine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
@@ -16,10 +17,7 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.*;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -38,6 +36,7 @@ import java.io.IOException;
 public class ESRestClient {
     private Logger logger = LogManager.getLogger(ESRestClient.class);
 
+    private RestClient lowLevelClient;
     private RestHighLevelClient client;
 
     private static String DEFAULT_TYPE = "_doc";
@@ -53,6 +52,7 @@ public class ESRestClient {
             hosts[i] = new HttpHost(ip, port);
         }
         RestClientBuilder builder = RestClient.builder(hosts);
+        lowLevelClient = builder.build();
         client = new RestHighLevelClient(builder);
         logger.info("build rest-high-level client succeed");
     }
@@ -67,9 +67,12 @@ public class ESRestClient {
     }
 
     public boolean isExistedTemplate(String templateName) throws IOException {
-        GetIndexTemplatesRequest request = new GetIndexTemplatesRequest(templateName);
-        GetIndexTemplatesResponse response = client.indices().getTemplate(request, RequestOptions.DEFAULT);
-        return ! response.getIndexTemplates().isEmpty();
+//        GetIndexTemplatesRequest request = new GetIndexTemplatesRequest(templateName);
+//        GetIndexTemplatesResponse response = client.indices().getTemplate(request, RequestOptions.DEFAULT);
+//        return ! response.getIndexTemplates().isEmpty();
+        Request request = new Request("GET", "/_template/"+templateName);
+        Response response = lowLevelClient.performRequest(request);
+        return response.getStatusLine().getStatusCode() == 200;
     }
 
     public boolean putTemplate(String templateName, XContentBuilder templateBuilder) throws IOException {

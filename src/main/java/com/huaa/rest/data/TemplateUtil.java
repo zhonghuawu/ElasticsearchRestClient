@@ -36,7 +36,7 @@ public class TemplateUtil {
             builder.endObject();
             builder.startObject("mappings");
             {
-                builder.startObject("_default_");
+                builder.startObject("_doc");
                 {
                     builder.startObject("properties");
                     {
