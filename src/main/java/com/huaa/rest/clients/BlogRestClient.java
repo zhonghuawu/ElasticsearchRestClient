@@ -3,12 +3,15 @@ package com.huaa.rest.clients;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.huaa.rest.core.ESBulkProcessor;
 import com.huaa.rest.core.ESRestClient;
 import com.huaa.rest.data.RawBlog;
 import com.huaa.rest.data.TemplateUtil;
 import com.huaa.util.GsonUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -30,6 +33,10 @@ import java.util.stream.Stream;
 
 public class BlogRestClient {
     private static Logger logger = LogManager.getLogger(BlogRestClient.class);
+
+    private ESRestClient client;
+    private BulkProcessor bulkProcessor;
+
     private static String alias = "blog";
     private static String templateName = alias + "-template";
     private ESRestClient client;
@@ -38,12 +45,14 @@ public class BlogRestClient {
         this.client = client;
         try {
             boolean result = putTemplate();
-            if (!result) {
-                logger.error("putTemplate failed, {}", alias);
+            if (! result)
+            {
+                logger.error("putTemplate failed, {}", templateName);
             }
-        } catch (IOException e) {
-            logger.error("putTemplate failed, {}", alias, e);
+        } catch (Throwable e) {
+            logger.error("putTemplate failed, {}", templateName, e);
         }
+        bulkProcessor = new ESBulkProcessor(client.getClient()).getBulkProcessor();
     }
 
     private static String joinIndexName(String suffix) {
@@ -51,16 +60,25 @@ public class BlogRestClient {
     }
 
     private boolean putTemplate() throws IOException {
-        if (client.isExistedTemplate(templateName)) {
-            return true;
-        }
+//        if (client.isExistedTemplate(templateName)) {
+//            return true;
+//        }
         XContentBuilder templateSource = TemplateUtil.blogTemplate(alias);
         return client.putTemplate(templateName, templateSource);
     }
 
-    public boolean store(String suffix, RawBlog... rawBlogs) throws IOException {
-        Preconditions.checkNotNull(rawBlogs);
-        return client.index(joinIndexName(suffix), rawBlogs);
+    private static String joinIndexName(String suffix)
+    {
+        return Joiner.on("-").join(alias, suffix);
+    }
+
+    public boolean store(String suffix, List<RawBlog> rawBlogList) throws IOException {
+        return client.index(joinIndexName(suffix), rawBlogList.toArray());
+    }
+
+    public void storeBulk(String suffix, List<RawBlog> rawBlogList) {
+        rawBlogList.forEach(rawBlog ->
+                bulkProcessor.add(new IndexRequest(joinIndexName(suffix), "_doc", GsonUtil.toJson(rawBlog))));
     }
 
     public List<RawBlog> query(String field, Object value, int pageSize, int page) throws IOException {

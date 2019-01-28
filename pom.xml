@@ -8,6 +8,15 @@
     <artifactId>ElasticsearchRestClient</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <!-- Build args -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- for compiler plugin -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.encoding>utf8</maven.compiler.encoding>
+    </properties>
 
     <dependencies>
 
