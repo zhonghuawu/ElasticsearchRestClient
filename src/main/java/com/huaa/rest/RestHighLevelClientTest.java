@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 /**
  * Desc:
@@ -21,9 +22,9 @@ import java.util.Random;
 
 public class RestHighLevelClientTest {
 
-//    private static String esips = "192.168.1.4:9200";
+    private static String alpha_es_ips = "192.168.1.4:9200";
 
-    private static final String alpha_es_ips = "10.27.21.239:9200";
+//    private static final String alpha_es_ips = "10.27.21.239:9200";
 
     private static ESRestClient esRestClient;
     private static BlogRestClient blogRestClient;
@@ -35,39 +36,39 @@ public class RestHighLevelClientTest {
 
     public static void main(String[] args) throws IOException {
 //        store(System.currentTimeMillis());
-//        query();
-        storeThreeMonth();
-
-//        esRestClient.close();
+        query();
+//        storeThreeMonth();
+//
+        esRestClient.close();
     }
 
     private static void storeThreeMonth() throws IOException {
         final long now = System.currentTimeMillis();
         final long oneDay = 1000L * 60 * 60 * 24;
         final int days = 30 * 3;
-        for (int day=0; day<days; day++) {
-            store(now - day * oneDay);
-        }
-
+        IntStream.range(0, days)
+                .forEach(day -> store(now - day * oneDay));
     }
 
-    private static void store(long ts) throws IOException {
+    private static void store(long ts) {
         Random random = new Random();
         int n = 1;
-        List<RawBlog> blogs = Lists.newArrayList();
-        for (int i=0; i<n; i++) {
+        List<RawBlog> blogList = Lists.newArrayList();
+        for (int i = 0; i < n; i++) {
             RawBlog blog = new RawBlog("title" + random.nextInt(100), "text" + random.nextLong());
-            int k = random.nextInt(3);
             Map<String, String> tags = Maps.newHashMap();
-            while(k-- != 0) {
-                tags.put("key"+random.nextInt(100), "value"+random.nextInt(100));
-            }
+            IntStream.range(0, random.nextInt(3))
+                    .forEach(k -> tags.put("key" + random.nextInt(100), "value" + random.nextInt(100)));
             blog.setTags(tags);
-            blogs.add(blog);
+            blogList.add(blog);
         }
 
-        boolean created = blogRestClient.store(DateUtil.formatIndex(ts), blogs);
-        System.out.println("created: " + created);
+        try {
+            boolean created = blogRestClient.store(DateUtil.formatIndex(ts), blogList);
+            System.out.println("created: " + created);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void query() throws IOException {

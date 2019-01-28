@@ -38,13 +38,13 @@ public class BlogRestClient {
     private BulkProcessor bulkProcessor;
 
     private static String alias = "blog";
-    private static String templateName = alias + "-template";
-    private ESRestClient client;
 
     public BlogRestClient(ESRestClient client) {
         this.client = client;
+        String templateName = alias + "-template";
         try {
-            boolean result = putTemplate();
+            XContentBuilder templateSource = TemplateUtil.blogTemplate(alias);
+            boolean result = client.putTemplate(templateName, templateSource);
             if (! result)
             {
                 logger.error("putTemplate failed, {}", templateName);
@@ -53,18 +53,6 @@ public class BlogRestClient {
             logger.error("putTemplate failed, {}", templateName, e);
         }
         bulkProcessor = new ESBulkProcessor(client.getClient()).getBulkProcessor();
-    }
-
-    private static String joinIndexName(String suffix) {
-        return Joiner.on("-").join(alias, suffix);
-    }
-
-    private boolean putTemplate() throws IOException {
-//        if (client.isExistedTemplate(templateName)) {
-//            return true;
-//        }
-        XContentBuilder templateSource = TemplateUtil.blogTemplate(alias);
-        return client.putTemplate(templateName, templateSource);
     }
 
     private static String joinIndexName(String suffix)
