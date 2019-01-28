@@ -2,8 +2,6 @@ package com.huaa.util;
 
 import com.google.gson.Gson;
 
-import java.lang.reflect.Type;
-
 /**
  * Desc:
  *
@@ -15,8 +13,8 @@ public class GsonUtil {
 
     private static Gson gson = new Gson();
 
-    public static <T> T fromJson(String json, Type typeOfT) {
-        return gson.fromJson(json, typeOfT);
+    public static <T> T fromJson(String json, Class<T> tClass) {
+        return gson.fromJson(json, tClass);
     }
 
     public static String toJson(Object object) {
